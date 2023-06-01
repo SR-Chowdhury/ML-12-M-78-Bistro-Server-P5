@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // JWT verfication
-const jwtVeriy = (req, res, next) => {
+const jwtVerify = (req, res, next) => {
     const authorization = req.headers.authorization;
     
     if(!authorization) {
@@ -62,10 +62,25 @@ async function run() {
             res.send({token});
         });
 
+        // Admin Middleware: Must use after using jwtVerify cause email we got from jwtVerify middleware
+        const verifyAdmin = async (req, res, next) => {
+            const email = req.decoded.email;
+            const query = { email: email};
+            const user = await userCollection.findOne(query);
+            if (user?.role !== 'admin') {
+               return res.status(403).send({ error: true, message : `Forbidden Access` });
+            }
+            next();
+        }
+
         /**
          * ------------------------------ User Collection --------------------------------
+         * To Protect Users route:
+         * 0. Do not show secure links to those who should not see the links
+         * 1. use jwt token: jwtVerify
+         * 2. use verifyAdmin middleware N>B> Must use jwtVerify before use this middleware
          */
-        app.get('/users', async (req, res) => {
+        app.get('/users', jwtVerify, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
@@ -82,7 +97,7 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/users/admin/:email', jwtVeriy, async (req, res) => {
+        app.get('/users/admin/:email', jwtVerify, async (req, res) => {
             const email = req.params.email;
 
             if (email !== req.decoded.email) {
@@ -125,7 +140,7 @@ async function run() {
          * ------------------------------ Cart Collection --------------------------------
          */
 
-        app.get('/carts', jwtVeriy, async (req, res) => {
+        app.get('/carts', jwtVerify, async (req, res) => {
             const email = req.query.email;
             // console.log(email);
             if (!email) {
