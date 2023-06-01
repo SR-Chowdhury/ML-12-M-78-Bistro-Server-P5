@@ -5,3 +5,4 @@
 * 78-7 (Recap) Create a JWT token and save it on client side
 * 78-8 (Recap) Send JWT token to back end for verification
 * 78-9 (optional & advanced) axios interceptor using chat gpt 
+* 78-10 Limit the feature based on admin level
