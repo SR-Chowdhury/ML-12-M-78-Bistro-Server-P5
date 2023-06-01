@@ -123,7 +123,7 @@ async function run() {
             console.log(decodedEmail);
 
             if(email !== decodedEmail) {
-                return res.status(401).send({error: true, message: 'Forbidden Access'});
+                return res.status(403).send({error: true, message: 'Forbidden Access'});
             }
 
             const query = { email : email };
